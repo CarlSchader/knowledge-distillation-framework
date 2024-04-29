@@ -14,8 +14,6 @@ def logit_distillation_loss(student_logits, teacher_logits, temperature=1.0):
 class KnowledgeDistillationModule(L.LightningModule):
     '''
     A PyTorch Lightning module for knowledge distillation.
-    Based on the paper "Improving Knowledge Distillation via Regularizing Feature 
-    Norm and Direction."
 
     The student encoder and teacher encoder should output the same feature dimension.
     
