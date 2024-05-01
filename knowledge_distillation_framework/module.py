@@ -49,6 +49,12 @@ class KnowledgeDistillationModule(L.LightningModule):
         self.teacher_head = teacher_head
         self.student_head = student_head
 
+        for param in self.teacher_encoder.parameters():
+            param.requires_grad = False
+
+        for param in self.teacher_head.parameters():
+            param.requires_grad = False
+
         self.task_loss_fn = task_loss_fn
         self.kd_loss_fn = kd_loss_fn
         self.learning_rate = learning_rate
@@ -58,28 +64,32 @@ class KnowledgeDistillationModule(L.LightningModule):
         self.teacher_encoder.eval()
         self.teacher_head.eval()
 
-        self.save_hyperparameters(ignore=['teacher_encoder', 'teacher_head'])
+        self.save_hyperparameters(ignore=['teacher_encoder', 'teacher_head', 'student_encoder', 'student_head'])
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        with torch.no_grad():
-            zt = self.teacher_encoder(x)
-            qt = self.teacher_head(zt)
+        zt = self.teacher_encoder(x)
+        qt = self.teacher_head(zt)
+
         zs = self.student_encoder(x)
         qs = self.student_head(zs)
+
         loss = self.task_loss_fn(zs, zt, qs, qt, y) + self.kd_loss_fn(zs, zt, qs, qt, y)
         self.log('train_loss', loss, prog_bar=True)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        with torch.no_grad():
-            zt = self.teacher_encoder(x)
-            qt = self.teacher_head(zt)
+        zt = self.teacher_encoder(x)
+        qt = self.teacher_head(zt)
+
         zs = self.student_encoder(x)
         qs = self.student_head(zs)
+
         loss = self.task_loss_fn(zs, zt, qs, qt, y) + self.kd_loss_fn(zs, zt, qs, qt, y)
         self.log('val_loss', loss, prog_bar=True)
+
         return loss
 
     def configure_optimizers(self):
