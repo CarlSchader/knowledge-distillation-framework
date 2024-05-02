@@ -77,6 +77,9 @@ class KnowledgeDistillationModule(L.LightningModule):
         task_loss = self.task_loss_fn(zs, zt, qs, qt, y)
         kd_loss = self.kd_loss_fn(zs, zt, qs, qt, y)
 
+        self.log('task_loss', task_loss, prog_bar=True)
+        self.log('kd_loss', kd_loss, prog_bar=True)
+
         loss = task_loss + kd_loss
         self.log('train_loss', loss, prog_bar=True)
 
@@ -92,6 +95,8 @@ class KnowledgeDistillationModule(L.LightningModule):
 
         task_loss = self.task_loss_fn(zs, zt, qs, qt, y)
         kd_loss = self.kd_loss_fn(zs, zt, qs, qt, y)
+        self.log('val_task_loss', task_loss, prog_bar=True)
+        self.log('val_kd_loss', kd_loss, prog_bar=True)
 
         loss = task_loss + kd_loss
         self.log('val_loss', loss, prog_bar=True)
@@ -110,7 +115,7 @@ class KnowledgeDistillationModule(L.LightningModule):
             'optimizer': optimizer,
             'lr_scheduler': {
                 'scheduler': scheduler,
-                "monitor": "val_loss",
+                "monitor": "val_task_loss",
             }
         }
 
