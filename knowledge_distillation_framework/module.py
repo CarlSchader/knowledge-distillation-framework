@@ -73,8 +73,11 @@ class KnowledgeDistillationModule(L.LightningModule):
 
         zs = self.student_encoder(x)
         qs = self.student_head(zs)
+        
+        task_loss = self.task_loss_fn(zs, zt, qs, qt, y)
+        kd_loss = self.kd_loss_fn(zs, zt, qs, qt, y)
 
-        loss = self.task_loss_fn(zs, zt, qs, qt, y) + self.kd_loss_fn(zs, zt, qs, qt, y)
+        loss = task_loss + kd_loss
         self.log('train_loss', loss, prog_bar=True)
 
         return loss
@@ -87,7 +90,10 @@ class KnowledgeDistillationModule(L.LightningModule):
         zs = self.student_encoder(x)
         qs = self.student_head(zs)
 
-        loss = self.task_loss_fn(zs, zt, qs, qt, y) + self.kd_loss_fn(zs, zt, qs, qt, y)
+        task_loss = self.task_loss_fn(zs, zt, qs, qt, y)
+        kd_loss = self.kd_loss_fn(zs, zt, qs, qt, y)
+
+        loss = task_loss + kd_loss
         self.log('val_loss', loss, prog_bar=True)
 
         return loss
